@@ -1,0 +1,27 @@
+{
+  "name": "express-autorouter",
+  "repository": "https://github.com/schinwald/express-autorouter",
+  "version": "0.0.0",
+  "description": "An automatic file-system based routing solution for express.",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "James Schinwald",
+  "license": "MIT",
+  "keywords": [
+    "express",
+    "automatic",
+    "router",
+    "routing",
+    "file",
+    "file-system",
+    "file-based",
+    "folder",
+    "folder-based",
+    "path",
+    "typescript",
+    "nextjs"
+  ]
+}
