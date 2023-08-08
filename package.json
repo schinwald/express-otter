@@ -1,5 +1,7 @@
 {
   "name": "express-autorouter",
+  "version": "1.0.0",
+  "description": "",
   "module": "index.ts",
   "type": "module",
   "author": "James Schinwald",
@@ -15,6 +17,8 @@
     "folder",
     "folder-based",
     "path",
+    "dynamic",
+    "static",
     "typescript",
     "nextjs"
   ],
@@ -26,7 +30,12 @@
   },
   "dependencies": {
     "@types/express": "^4.17.17",
-    "express": "^4.18.2",
-    "got": "^13.0.0"
+    "commitizen": "^4.3.0",
+    "express": "^4.18.2"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }
