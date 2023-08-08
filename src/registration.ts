@@ -1,6 +1,6 @@
 import fs from 'fs/promises'
 import { Express } from 'express'
-import AutoRouter from './errors'
+import Otter from './errors'
 
 /**
  * Global variables
@@ -99,9 +99,9 @@ type RegisterRoutersOptions = {
  * @description Registers express routers based on the options {RegisterRoutersOptions} specified.
  * @param {RegisterRoutersOptions} options - changes the flow of the function
  * @returns {Promise<void}
- * @throws {AutoRouter.NotImplementedError}
- * @throws {AutoRouter.EmptyDirectoryError}
- * @throws {AutoRouter.ImportError}
+ * @throws {Otter.NotImplementedError}
+ * @throws {Otter.EmptyDirectoryError}
+ * @throws {Otter.ImportError}
  */
 export async function registerRouters (options: RegisterRoutersOptions): Promise<void> {
 	const directories: Array<Array<string>> = []
@@ -174,13 +174,13 @@ export async function registerRouters (options: RegisterRoutersOptions): Promise
 				}
 
 				// Unhandled element
-				throw new AutoRouter.NotImplementedError('')
+				throw new Otter.NotImplementedError('')
 			}
 			continue
 		}
 
 		// Unhandled element
-		throw new AutoRouter.NotImplementedError('')
+		throw new Otter.NotImplementedError('')
 	}
 
 	// Register all found routers
@@ -208,14 +208,14 @@ export async function registerRouters (options: RegisterRoutersOptions): Promise
  * @description Derives the relative path from the directories traversed.
  * @param {string[][]} directories - traversed directories
  * @returns {string} relative path
- * @throws {AutoRouter.EmptyDirectoryError}
+ * @throws {Otter.EmptyDirectoryError}
  */
 function deriveLastPathFromDirectories (directories: string[][]): string {
 	const path: string[] = ['']
 
 	for (const directory of directories) {
 		if (directory.length === 0) {
-			throw new AutoRouter.EmptyDirectoryError('Unable to get relative path from directories')
+			throw new Otter.EmptyDirectoryError('Unable to get relative path from directories')
 		}
 
 		path.push(directory[directory.length - 1])
@@ -241,22 +241,22 @@ type AttemptToRegisterRouterOptions = {
  * @param routerPath - path to use for import
  * @param {AttemptToRegisterRouterOptions} options - changes the flow of the function
  * @returns {Promise<void>}
- * @throws {AutoRouter.ImportError}
+ * @throws {Otter.ImportError}
  */
 async function attemptToRegisterRouter (routerPath: string, options: AttemptToRegisterRouterOptions): Promise<void> {
 	const routerFile = (await import(routerPath)
 		.catch((error) => {
-			throw new AutoRouter.ImportError(`Unable to import ${routerPath}`, { cause: error })
+			throw new Otter.ImportError(`Unable to import ${routerPath}`, { cause: error })
 		})) as unknown
 
 	let router
 
 	if (typeof routerFile !== 'object' || routerFile === null) {
-		throw new AutoRouter.ImportError('Router is not an object.')
+		throw new Otter.ImportError('Router is not an object.')
 	}
 
 	if (!('default' in routerFile)) {
-		throw new AutoRouter.ImportError('Router has no default export')
+		throw new Otter.ImportError('Router has no default export')
 	}
 
 	router = routerFile.default
@@ -265,18 +265,18 @@ async function attemptToRegisterRouter (routerPath: string, options: AttemptToRe
 		// TODO: fix this so that there is no any
 		options.app.use(router as any)
 	} catch {
-		throw new AutoRouter.ImportError('Not an express router.')
+		throw new Otter.ImportError('Not an express router.')
 	}
 }
 
 /**
  * @description Generates a properly formatted URL based on its relative path. The relative path is created using the base path provided in the register router options {RegisterRouterOptions}.
  * @returns {string} url that was generated
- * @throws {AutoRouter.TypeError}
+ * @throws {Otter.TypeError}
  */
 export function generateURL (): string {
 	if (typeof routerRelativePathBuffer !== 'string') {
-		throw new AutoRouter.TypeError('Relative path of router is not a string')
+		throw new Otter.TypeError('Relative path of router is not a string')
 	}
 
 	routerRelativePathBuffer = routerRelativePathBuffer.replaceAll(routerSlugPattern, ':$1')

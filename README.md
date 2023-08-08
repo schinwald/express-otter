@@ -18,7 +18,7 @@ It has:
 ### :inbox_tray: Installation
 
 ```bash
-npm install express-autorouter
+npm install express-otter
 ```
 
 ### :telescope: Usage
@@ -47,7 +47,7 @@ root
 /** ./app.js */
 
 import express from 'express'
-import { registerRouters } from 'express-autorouter'
+import { registerRouters } from 'express-otter'
 
 const app = express()
 
@@ -66,7 +66,7 @@ app.listen(3000, () => {
 /** ./src/routes/pets/[pets].js */
 
 import express from 'express'
-import { generateURL } from 'express-autorouter'
+import { generateURL } from 'express-otter'
 
 /** Used to generate the URL when registering routes */
 const url = generateURL()
@@ -110,7 +110,7 @@ root
 /** ./app.js */
 
 import express from 'express'
-import { registerRouters } from 'express-autorouter'
+import { registerRouters } from 'express-otter'
 
 const app = express()
 
