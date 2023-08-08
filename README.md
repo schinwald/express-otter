@@ -1,4 +1,4 @@
-# Express AutoRouter
+# Express Otter
 
 A lightning fast :zap: automatic router-registration solution for express applications.
 
