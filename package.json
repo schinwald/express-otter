@@ -1,5 +1,5 @@
 {
-  "name": "express-otto",
+  "name": "express-otter",
   "version": "0.1.1",
   "description": "",
   "module": "index.ts",
@@ -8,7 +8,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/schinwald/express-otto.git"
+    "url": "https://github.com/schinwald/express-otter.git"
   },
   "keywords": [
     "express",
