@@ -1,4 +1,4 @@
-import fs from 'fs/promises'
+import fs from 'node:fs/promises'
 import { Express } from 'express'
 import Otter from './errors'
 import path from 'path'
