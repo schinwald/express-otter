@@ -1,6 +1,6 @@
 {
   "name": "express-otto",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
   "module": "index.ts",
   "type": "module",
@@ -27,7 +27,9 @@
     "nextjs"
   ],
   "main": "dist/index.js",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "bun-types": "latest",
     "commitizen": "^4.3.0"
