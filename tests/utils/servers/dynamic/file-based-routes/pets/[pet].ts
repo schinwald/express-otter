@@ -1,6 +1,6 @@
 import express from 'express'
 import path from 'path'
-import { generateURL } from '../../../../../..'
+import { generateURL } from '../../../../../../index'
 
 const router = express.Router()
 

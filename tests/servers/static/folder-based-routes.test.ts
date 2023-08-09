@@ -2,14 +2,13 @@ import { expect, test } from 'bun:test'
 import express from 'express'
 import { registerRouters } from '../../../index'
 
-test('test folder-based routes', async () => {
+test('test static folder-based routes', async () => {
   await new Promise(async (resolve) => {
     const app = express()
 
     await registerRouters({
       app,
-      paths: ['./tests/utils/servers/static/folder-based-routes'],
-      dynamic: false,
+      paths: ['../../../tests/utils/servers/static/folder-based-routes'],
       beforeRegister: ({ path }) => {
         console.log(path)
       }

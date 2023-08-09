@@ -10,7 +10,7 @@ class GenericError extends Error {
 }
 
 /**
- * @classdesc 
+ * @classdesc An error class for incorrect types
  * @extends {GenericError}
  */
 class TypeError extends GenericError {
@@ -21,7 +21,7 @@ class TypeError extends GenericError {
 }
 
 /**
- * @classdesc 
+ * @classdesc An error class for import failures
  * @extends {GenericError}
  */
 class ImportError extends GenericError {
@@ -32,7 +32,7 @@ class ImportError extends GenericError {
 }
 
 /**
- * @classdesc 
+ * @classdesc An error class for when a directory is empty and cannot be used
  * @extends {GenericError}
  */
 class EmptyDirectoryError extends GenericError {
@@ -43,14 +43,21 @@ class EmptyDirectoryError extends GenericError {
 }
 
 /**
- * @classdesc 
+ * @classdesc An error class for invalid paths
+ * @extends {GenericError}
+ */
+class PathError extends GenericError {
+	constructor (message?: string, options?: ErrorOptions) {
+		super(message, options)
+		this.name = 'PathError'
+	}
+}
+
+/**
+ * @classdesc An error class for unimplemented flows
  * @extends {GenericError}
  */
 class NotImplementedError extends GenericError {
-
-	/**
-	 * @description Creates an instance of the class
-	 */
 	constructor (message?: string, options?: ErrorOptions) {
 		super(message, options)
 		this.name = 'NotImplementedError'
@@ -58,12 +65,13 @@ class NotImplementedError extends GenericError {
 }
 
 /**
- * 
+ * Export all errors together
  */
 export default {
 	GenericError,
 	TypeError,
 	ImportError,
 	EmptyDirectoryError,
+	PathError,
 	NotImplementedError
 }

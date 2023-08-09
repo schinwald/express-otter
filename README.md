@@ -170,6 +170,7 @@ console.log(response)
 - [x] Create static & dynamic routing
 - [x] Allow for flexible slug & ignore pattern design
 - [x] Add beforeRegister & afterRegister hooks
+- [ ] Add WebSocket support
 - [ ] Create plugin capabilities
 - [ ] Add more regex options for matching
 

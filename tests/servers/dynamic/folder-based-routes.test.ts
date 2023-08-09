@@ -8,8 +8,7 @@ test('test dynamic folder-based routes', async () => {
 
     await registerRouters({
       app,
-      paths: ['./tests/utils/servers/dynamic/folder-based-routes'],
-      dynamic: false,
+      paths: ['../../../tests/utils/servers/dynamic/folder-based-routes'],
       beforeRegister: ({ path }) => {
         console.log(path)
       }

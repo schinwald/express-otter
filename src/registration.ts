@@ -1,6 +1,7 @@
 import fs from 'fs/promises'
 import { Express } from 'express'
 import Otter from './errors'
+import path from 'path'
 
 /**
  * Global variables
@@ -102,6 +103,7 @@ type RegisterRoutersOptions = {
  * @throws {Otter.NotImplementedError}
  * @throws {Otter.EmptyDirectoryError}
  * @throws {Otter.ImportError}
+ * @throws {Otter.PathError}
  */
 export async function registerRouters (options: RegisterRoutersOptions): Promise<void> {
 	const directories: Array<Array<string>> = []
@@ -113,14 +115,22 @@ export async function registerRouters (options: RegisterRoutersOptions): Promise
 	for (let basePath of new Set(options.paths)) {
 		basePath = basePath.replace(/^\.\//, '')
 		basePath = basePath.replace(/\/$/, '')
-		const stat = await fs.stat(basePath)
+
+		const absolutePath = path.resolve(path.dirname(process.argv[1]), basePath)
+
+		let stat
+		try {
+			stat = await fs.stat(absolutePath)
+		} catch (error) {
+			throw new Otter.PathError('', { cause: error })
+		}
 		
 		// Add router path
 		if (stat.isFile()) {
-			const relativePath = '/'
-			const fullPath = `./${basePath}${relativePath}`
+			const relativePath = ''
+			const fullPath = [absolutePath, relativePath].join('/')
 			routerPaths[fullPath] = {
-				basePath: `./${basePath}`,
+				basePath,
 				relativePath
 			}
 			continue
@@ -128,7 +138,13 @@ export async function registerRouters (options: RegisterRoutersOptions): Promise
 
 		// Start traversing the directories
 		if (stat.isDirectory()) {
-			const directory = await fs.readdir(basePath)
+			let directory
+			try {
+				directory = await fs.readdir(absolutePath)
+			} catch (error) {
+				throw new Otter.PathError('', { cause: error })
+			}
+
 			directories.push(directory)
 			
 			while (directories.length > 0) {
@@ -147,8 +163,14 @@ export async function registerRouters (options: RegisterRoutersOptions): Promise
 
 				// Grab the last directory element
 				const relativePath = deriveLastPathFromDirectories(directories)
-				const fullPath = `./${basePath}${relativePath}`
-				const stat = await fs.stat(fullPath)
+				const fullPath = [absolutePath, relativePath].join('/')
+
+				let stat
+				try {
+					stat = await fs.stat(fullPath)
+				} catch (error) {
+					throw new Otter.PathError('', { cause: error })
+				}
 
 				// Add router path
 				if (stat.isFile()) {
@@ -156,7 +178,7 @@ export async function registerRouters (options: RegisterRoutersOptions): Promise
 					if (!/(\.ts|\.js)$/.test(element)) continue
 					if ((options.ignore_pattern ?? /^_/).test(element)) continue
 					routerPaths[fullPath] = {
-						basePath: `./${basePath}`,
+						basePath,
 						relativePath
 					}
 					continue
@@ -169,7 +191,12 @@ export async function registerRouters (options: RegisterRoutersOptions): Promise
 						directory.pop()
 						continue
 					}
-					directories.push(await fs.readdir(fullPath))
+
+					try {
+						directories.push(await fs.readdir(fullPath))
+					} catch (error) {
+						throw new Otter.PathError('', { cause: error })
+					}
 					continue
 				}
 
@@ -211,7 +238,7 @@ export async function registerRouters (options: RegisterRoutersOptions): Promise
  * @throws {Otter.EmptyDirectoryError}
  */
 function deriveLastPathFromDirectories (directories: string[][]): string {
-	const path: string[] = ['']
+	const path: string[] = []
 
 	for (const directory of directories) {
 		if (directory.length === 0) {
@@ -282,5 +309,7 @@ export function generateURL (): string {
 	routerRelativePathBuffer = routerRelativePathBuffer.replaceAll(routerSlugPattern, ':$1')
 	routerRelativePathBuffer = routerRelativePathBuffer.replace(/\/index(\.ts|\.js)$/, '')
 	routerRelativePathBuffer = routerRelativePathBuffer.replace(/(\.ts|\.js)$/, '')
+	routerRelativePathBuffer = `/${routerRelativePathBuffer}`
+
 	return routerRelativePathBuffer
 }
