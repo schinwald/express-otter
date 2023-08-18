@@ -132,7 +132,11 @@ export async function registerRouters (options: RegisterRoutersOptions): Promise
 		try {
 			stat = await fs.stat(absolutePath)
 		} catch (error) {
-			throw new Otter.PathError('')
+			logger.error({
+				msg: 'Unable to get stats',
+				err: error
+			})
+			throw new Otter.PathError('Unable to get stats.')
 		}
 
 		// Add router path
@@ -152,7 +156,11 @@ export async function registerRouters (options: RegisterRoutersOptions): Promise
 			try {
 				directory = await fs.readdir(absolutePath)
 			} catch (error) {
-				throw new Otter.PathError('')
+				logger.error({
+					msg: 'Unable to read directory',
+					err: error
+				})
+				throw new Otter.PathError('Unable to read directory.')
 			}
 
 			directories.push(directory)
@@ -179,7 +187,11 @@ export async function registerRouters (options: RegisterRoutersOptions): Promise
 				try {
 					stat = await fs.stat(fullPath)
 				} catch (error) {
-					throw new Otter.PathError('')
+					logger.error({
+						msg: 'Unable to get stats',
+						err: error
+					})
+					throw new Otter.PathError('Unable to get stats.')
 				}
 
 				// Add router path
@@ -205,27 +217,48 @@ export async function registerRouters (options: RegisterRoutersOptions): Promise
 					try {
 						directories.push(await fs.readdir(fullPath))
 					} catch (error) {
-						throw new Otter.PathError('')
+						logger.error({
+							msg: 'Unable to read directory',
+							err: error
+						})
+						throw new Otter.PathError('Unable to read directory.')
 					}
 					continue
 				}
 
 				// Unhandled element
-				throw new Otter.NotImplementedError('')
+				logger.error({
+					msg: 'Only files and folders are handled',
+					obj: { fullPath }
+				})
+				throw new Otter.NotImplementedError('Unable to decypher file/folder type.')
 			}
 			continue
 		}
 
 		// Unhandled element
-		throw new Otter.NotImplementedError('')
+		logger.error({
+			msg: 'Only files and folders are handled',
+			obj: { absolutePath }
+		})
+		throw new Otter.NotImplementedError('Unable to decypher file/folder type.')
 	}
-
-	logger.info('Attempting to register routers')
 
 	// Register all found routers
 	for (const routerFullPath of Object.keys(routerPaths)) {
+		logger.info({
+			msg: 'Attempting to register router',
+			obj: {
+				fullPath: routerFullPath,
+				basePath: routerPaths[routerFullPath].basePath,
+				relativePath: routerPaths[routerFullPath].relativePath
+			}
+		})
+
 		// Allows generateURL to work properly
 		routerRelativePathBuffer = routerPaths[routerFullPath].relativePath
+
+		logger.info('Before registering fired')
 
 		options.beforeRegister?.({
 			path: routerFullPath
@@ -237,12 +270,14 @@ export async function registerRouters (options: RegisterRoutersOptions): Promise
 			})
 		}
 
+		logger.info('After registering hook fired')
+
 		options.afterRegister?.({
 			path: routerFullPath
 		})
 	}
 
-	logger.info('Successfully registered routers')
+	logger.info('Successfully registered all routers')
 }
 
 /**
@@ -256,13 +291,21 @@ function deriveLastPathFromDirectories (directories: string[][]): string {
 
 	for (const directory of directories) {
 		if (directory.length === 0) {
+			logger.error('Length of directory is zero')
 			throw new Otter.EmptyDirectoryError('Unable to get relative path from directories')
 		}
 
 		path.push(directory[directory.length - 1])
 	}
 
-	return path.join('/')
+	const derived = path.join('/')
+	
+	logger.info({
+		msg: 'Derivded relative path from directories',
+		obj: { derived }
+	})
+
+	return derived
 }
 
 /**
@@ -288,20 +331,22 @@ async function attemptToRegisterRouter (routerPath: string, options: AttemptToRe
 	const routerFile = (await import(routerPath)
 		.catch((error) => {
 			logger.error({
-				msg: 'Unable to register routers',
+				msg: 'Something went wrong while importing',
 				err: error
 			})
-			throw new Otter.ImportError(`Unable to import ${routerPath}`)
+			throw new Otter.ImportError(`Unable to import ${routerPath}.`)
 		})) as unknown
 
 	let router: any
 
 	if (typeof routerFile !== 'object' || routerFile === null) {
+		logger.error('Imported router is not an object or is equal to null')
 		throw new Otter.ImportError('Router is not an object.')
 	}
 
 	if (!('default' in routerFile)) {
-		throw new Otter.ImportError('Router has no default export')
+		logger.error('Imported router has no default member')
+		throw new Otter.ImportError('Router has no default export.')
 	}
 
 	router = routerFile.default
@@ -310,8 +355,14 @@ async function attemptToRegisterRouter (routerPath: string, options: AttemptToRe
 		// TODO: fix this so that there is no any
 		options.app.use(router)
 	} catch {
+		logger.error('Failed to use router in express')
 		throw new Otter.ImportError('Not an express router.')
 	}
+
+	logger.info({
+		msg: 'Registered router',
+		obj: { routerPath }
+	})
 }
 
 /**
@@ -321,13 +372,23 @@ async function attemptToRegisterRouter (routerPath: string, options: AttemptToRe
  */
 export function generateURL (): string {
 	if (typeof routerRelativePathBuffer !== 'string') {
-		throw new Otter.TypeError('Relative path of router is not a string')
+		logger.error('Relative path of router is not a string')
+		throw new Otter.TypeError('Relative path of router is not a string.')
 	}
+
+	const before = routerRelativePathBuffer
 
 	routerRelativePathBuffer = routerRelativePathBuffer.replace(routerSlugPattern, ':$1')
 	routerRelativePathBuffer = routerRelativePathBuffer.replace(/\/index(\.ts|\.js)$/, '')
 	routerRelativePathBuffer = routerRelativePathBuffer.replace(/(\.ts|\.js)$/, '')
 	routerRelativePathBuffer = `/${routerRelativePathBuffer}`
+
+	const after = routerRelativePathBuffer
+
+	logger.info({
+		msg: 'Generated URL',
+		obj: { before, after }
+	})
 
 	return routerRelativePathBuffer
 }
