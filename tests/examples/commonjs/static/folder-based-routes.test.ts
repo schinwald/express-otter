@@ -32,6 +32,12 @@ describe('test static folder-based routes for commonjs', () => {
     child.kill('SIGKILL')
   })
 
+  it('should return the correct path for the / endpoint', async () => {
+    const response = await fetch('http://localhost:4000')
+    should.equal(response.status, 200)
+    should.equal(await response.text(), 'src/routes/index.js')
+  })
+
   it('should return the correct path for the /pets endpoint', async () => {
     const response = await fetch('http://localhost:4000/pets')
     should.equal(response.status, 200)

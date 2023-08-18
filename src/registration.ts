@@ -380,6 +380,7 @@ export function generateURL (): string {
 
 	routerRelativePathBuffer = routerRelativePathBuffer.replace(routerSlugPattern, ':$1')
 	routerRelativePathBuffer = routerRelativePathBuffer.replace(/\/index(\.ts|\.js)$/, '')
+	routerRelativePathBuffer = routerRelativePathBuffer.replace(/index(\.ts|\.js)$/, '')
 	routerRelativePathBuffer = routerRelativePathBuffer.replace(/(\.ts|\.js)$/, '')
 	routerRelativePathBuffer = `/${routerRelativePathBuffer}`
 
