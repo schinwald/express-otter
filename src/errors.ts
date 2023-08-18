@@ -3,8 +3,8 @@
  * @extends {Error}
  */
 class GenericError extends Error {
-	constructor (message?: string, options?: ErrorOptions) {
-		super(message, options)
+	constructor (message?: string) {
+		super(message)
 		this.name = 'GenericError'
 	}
 }
@@ -14,8 +14,8 @@ class GenericError extends Error {
  * @extends {GenericError}
  */
 class TypeError extends GenericError {
-	constructor (message?: string, options?: ErrorOptions) {
-		super(message, options)
+	constructor (message?: string) {
+		super(message)
 		this.name = 'TypeError'
 	}
 }
@@ -25,8 +25,8 @@ class TypeError extends GenericError {
  * @extends {GenericError}
  */
 class ImportError extends GenericError {
-	constructor (message?: string, options?: ErrorOptions) {
-		super(message, options)
+	constructor (message?: string) {
+		super(message)
 		this.name = 'ImportError'
 	}
 }
@@ -36,8 +36,8 @@ class ImportError extends GenericError {
  * @extends {GenericError}
  */
 class EmptyDirectoryError extends GenericError {
-	constructor (message?: string, options?: ErrorOptions) {
-		super(message, options)
+	constructor (message?: string) {
+		super(message)
 		this.name = 'EmptyDirectoryError'
 	}
 }
@@ -47,8 +47,8 @@ class EmptyDirectoryError extends GenericError {
  * @extends {GenericError}
  */
 class PathError extends GenericError {
-	constructor (message?: string, options?: ErrorOptions) {
-		super(message, options)
+	constructor (message?: string) {
+		super(message)
 		this.name = 'PathError'
 	}
 }
@@ -58,8 +58,8 @@ class PathError extends GenericError {
  * @extends {GenericError}
  */
 class NotImplementedError extends GenericError {
-	constructor (message?: string, options?: ErrorOptions) {
-		super(message, options)
+	constructor (message?: string) {
+		super(message)
 		this.name = 'NotImplementedError'
 	}
 }

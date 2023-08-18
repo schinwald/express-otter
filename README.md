@@ -1,5 +1,7 @@
 # Express Otter
 
+![A picture of an otter.](./logo.png)
+
 A lightning fast :zap: automatic router-registration solution for express applications.
 
 *(Built with extensibility in mind)*
@@ -54,7 +56,7 @@ const app = express()
 /** Register routers after initializing the app */
 await registerRouters({
     app,
-    path: ['./src/routes'] // Points to the routes directory
+    paths: ['./src/routes'] // Points to the routes directory
 })
 
 app.listen(3000, () => {
@@ -117,7 +119,7 @@ const app = express()
 /** Register routers after initializing the app */
 await registerRouters({
     app,
-    path: ['./src/routes'] // Points to the routes directory
+    paths: ['./src/routes'] // Points to the routes directory
 })
 
 app.listen(3000, () => {
@@ -150,42 +152,47 @@ console.log(response)
 
 ### :book: Documentation
 
-#### registerRouters(options)
-##### options
+#### registerRouters (options: RegisterRoutersOptions): void
+
+Recursively registers routes given the options below as a guideline.
+
+##### RegisterRoutersOptions
 
 | Property       | Type       | Default       | Description                                                   |
 |----------------|------------|---------------|---------------------------------------------------------------|
 | app            | `Express`  |               | An express app.                                               |
-| path           | `string[]` |               | Defines the base path(s) when looking for routers.            |
-| slug_pattern   | `RegExp`   | `/\[(.+)\]/g` | A **global** pattern for capturing slugs in files/folders.    |
-| ignore_pattern | `RegExp`   | `/^_/`        | A pattern for ignoring files/folders.                         |
-| dry            | `boolean`  | `false`       | Specifies whether to perform a dry run.                       |
+| paths          | `string[]` |               | Defines the base path(s) when looking for routers.            |
+| slugPattern    | `RegExp`   | `/\[(.+)\]/g` | A **global** pattern for capturing slugs in files/folders.    |
+| ignorePattern  | `RegExp`   | `/^_/`        | A pattern for ignoring files/folders.                         |
 | beforeRegister | `function` |               | A callback that is invoked right before registering a router. |
 | afterRegister  | `function` |               | A callback that is invoked right after registering a router.  |
+| dry            | `boolean`  | `false`       | Specifies whether to perform a dry run.                       |
+
+#### generateURL (): string
+
+Generates a URL for assigning it to a router (*dynamic routing only*).
+
+#### Debugging
+
+##### Flags
+
+*EXPRESS_OTTER_DEBUG*
+
+Useful for checking what could be going on under the water :ocean: (*hehe*). Sometimes assumptions on the paths can be incorrect so this can give some insights on what might need to change. Below is an example of how to use it.
+
+```bash
+EXPRESS_OTTER_DEBUG=true node index.js
+```
 
 ### :test_tube: Developement
 
 #### Roadmap
 
-- [x] Create static & dynamic routing
-- [x] Allow for flexible slug & ignore pattern design
-- [x] Add beforeRegister & afterRegister hooks
+- [x] Routing for static & dynamic strategies
+- [x] Support CommonJS and ESM
+- [x] Flexible slug & ignore patterns
+- [x] Hooks for beforeRegister & afterRegister
+- [x] Debug mode
 - [ ] Add WebSocket support
 - [ ] Create plugin capabilities
-- [ ] Add more regex options for matching
 
-#### Contributing
-
-To install dependencies:
-
-```bash
-bun install
-```
-
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v0.6.12. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.

@@ -1,7 +1,15 @@
-import fs from 'node:fs/promises'
+import fs from 'fs/promises'
 import { Express } from 'express'
 import Otter from './errors'
 import path from 'path'
+import pino from 'pino'
+
+const logger = pino({
+	transport: {
+		target: 'pino-pretty'
+	},
+	enabled: process.env.EXPRESS_OTTER_DEBUG === 'true' ? true : false
+})
 
 /**
  * Global variables
@@ -68,7 +76,7 @@ type RegisterRoutersOptions = {
 	 *	/\[(.*)\]/g -> captures ./pets/[pet].js
 	 *	/\:(.*)/g -> captures ./pets/:pet.js
 	 */
-	slug_pattern?: RegExp
+	slugPattern?: RegExp
 
 	/**
 	 * @description A pattern for ignoring folders and files. Useful for creating helper files that are not routers.
@@ -77,7 +85,7 @@ type RegisterRoutersOptions = {
 	 *	/^_/ -> ignores ./_folder/**
 	 *	/^#/ -> ignores ./#file.ts
 	 */
-	ignore_pattern?: RegExp
+	ignorePattern?: RegExp
 
 	/**
 	 * @description Specifies whether to perform a dry run without registering any routes. Useful for testing purposed or for automating other operations that rely on router registration process.
@@ -109,7 +117,9 @@ export async function registerRouters (options: RegisterRoutersOptions): Promise
 	const directories: Array<Array<string>> = []
 	const routerPaths: Record<string, { basePath: string, relativePath: string }> = {}
 
-	routerSlugPattern = options.slug_pattern ?? routerSlugPattern
+	routerSlugPattern = options.slugPattern ?? routerSlugPattern
+
+	logger.info('Scanning paths to find routers')
 
 	// Grab all router paths recursively
 	for (let basePath of new Set(options.paths)) {
@@ -122,9 +132,9 @@ export async function registerRouters (options: RegisterRoutersOptions): Promise
 		try {
 			stat = await fs.stat(absolutePath)
 		} catch (error) {
-			throw new Otter.PathError('', { cause: error })
+			throw new Otter.PathError('')
 		}
-		
+
 		// Add router path
 		if (stat.isFile()) {
 			const relativePath = ''
@@ -142,7 +152,7 @@ export async function registerRouters (options: RegisterRoutersOptions): Promise
 			try {
 				directory = await fs.readdir(absolutePath)
 			} catch (error) {
-				throw new Otter.PathError('', { cause: error })
+				throw new Otter.PathError('')
 			}
 
 			directories.push(directory)
@@ -169,14 +179,14 @@ export async function registerRouters (options: RegisterRoutersOptions): Promise
 				try {
 					stat = await fs.stat(fullPath)
 				} catch (error) {
-					throw new Otter.PathError('', { cause: error })
+					throw new Otter.PathError('')
 				}
 
 				// Add router path
 				if (stat.isFile()) {
 					const element = directory.pop() as string
 					if (!/(\.ts|\.js)$/.test(element)) continue
-					if ((options.ignore_pattern ?? /^_/).test(element)) continue
+					if ((options.ignorePattern ?? /^_/).test(element)) continue
 					routerPaths[fullPath] = {
 						basePath,
 						relativePath
@@ -187,7 +197,7 @@ export async function registerRouters (options: RegisterRoutersOptions): Promise
 				// Continue traversing the directories
 				if (stat.isDirectory()) {
 					const element = directory[directory.length - 1]
-					if ((options.ignore_pattern ?? /^_/).test(element)) {
+					if ((options.ignorePattern ?? /^_/).test(element)) {
 						directory.pop()
 						continue
 					}
@@ -195,7 +205,7 @@ export async function registerRouters (options: RegisterRoutersOptions): Promise
 					try {
 						directories.push(await fs.readdir(fullPath))
 					} catch (error) {
-						throw new Otter.PathError('', { cause: error })
+						throw new Otter.PathError('')
 					}
 					continue
 				}
@@ -209,6 +219,8 @@ export async function registerRouters (options: RegisterRoutersOptions): Promise
 		// Unhandled element
 		throw new Otter.NotImplementedError('')
 	}
+
+	logger.info('Attempting to register routers')
 
 	// Register all found routers
 	for (const routerFullPath of Object.keys(routerPaths)) {
@@ -229,6 +241,8 @@ export async function registerRouters (options: RegisterRoutersOptions): Promise
 			path: routerFullPath
 		})
 	}
+
+	logger.info('Successfully registered routers')
 }
 
 /**
@@ -273,10 +287,14 @@ type AttemptToRegisterRouterOptions = {
 async function attemptToRegisterRouter (routerPath: string, options: AttemptToRegisterRouterOptions): Promise<void> {
 	const routerFile = (await import(routerPath)
 		.catch((error) => {
-			throw new Otter.ImportError(`Unable to import ${routerPath}`, { cause: error })
+			logger.error({
+				msg: 'Unable to register routers',
+				err: error
+			})
+			throw new Otter.ImportError(`Unable to import ${routerPath}`)
 		})) as unknown
 
-	let router
+	let router: any
 
 	if (typeof routerFile !== 'object' || routerFile === null) {
 		throw new Otter.ImportError('Router is not an object.')
@@ -290,7 +308,7 @@ async function attemptToRegisterRouter (routerPath: string, options: AttemptToRe
 
 	try {
 		// TODO: fix this so that there is no any
-		options.app.use(router as any)
+		options.app.use(router)
 	} catch {
 		throw new Otter.ImportError('Not an express router.')
 	}
@@ -306,7 +324,7 @@ export function generateURL (): string {
 		throw new Otter.TypeError('Relative path of router is not a string')
 	}
 
-	routerRelativePathBuffer = routerRelativePathBuffer.replaceAll(routerSlugPattern, ':$1')
+	routerRelativePathBuffer = routerRelativePathBuffer.replace(routerSlugPattern, ':$1')
 	routerRelativePathBuffer = routerRelativePathBuffer.replace(/\/index(\.ts|\.js)$/, '')
 	routerRelativePathBuffer = routerRelativePathBuffer.replace(/(\.ts|\.js)$/, '')
 	routerRelativePathBuffer = `/${routerRelativePathBuffer}`
