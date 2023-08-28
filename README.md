@@ -193,6 +193,6 @@ EXPRESS_OTTER_DEBUG=true node index.js
 - [x] Flexible slug & ignore patterns
 - [x] Hooks for beforeRegister & afterRegister
 - [x] Debug mode
-- [ ] Add WebSocket support
+- [x] Add WebSocket support
 - [ ] Create plugin capabilities
 

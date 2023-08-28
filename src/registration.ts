@@ -328,35 +328,25 @@ type AttemptToRegisterRouterOptions = {
  * @throws {Otter.ImportError}
  */
 async function attemptToRegisterRouter (routerPath: string, options: AttemptToRegisterRouterOptions): Promise<void> {
-	const routerFile = (await import(routerPath)
+	const imported = await import(routerPath)
 		.catch((error) => {
 			logger.error({
 				msg: 'Something went wrong while importing',
 				err: error
 			})
 			throw new Otter.ImportError(`Unable to import ${routerPath}.`)
-		})) as unknown
+		}) as object
 
-	let router: any
-
-	if (typeof routerFile !== 'object' || routerFile === null) {
-		logger.error('Imported router is not an object or is equal to null')
-		throw new Otter.ImportError('Router is not an object.')
+	if (!('default' in imported)) {
+		logger.info('Imported file has no default export, skipping')
+		return
 	}
-
-	if (!('default' in routerFile)) {
-		logger.error('Imported router has no default member')
-		throw new Otter.ImportError('Router has no default export.')
-	}
-
-	router = routerFile.default
 
 	try {
-		// TODO: fix this so that there is no any
-		options.app.use(router)
+		options.app.use(imported.default as any)
 	} catch {
-		logger.error('Failed to use router in express')
-		throw new Otter.ImportError('Not an express router.')
+		logger.info('Default export is not a router, skipping')
+		return
 	}
 
 	logger.info({

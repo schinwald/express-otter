@@ -1,8 +1,10 @@
 import express from 'express'
+import expressWS from 'express-ws'
 import { registerRouters } from '../../../../dist/esm/index.js'
 
 
 const app = express()
+expressWS(app)
 
 await registerRouters({
   app,

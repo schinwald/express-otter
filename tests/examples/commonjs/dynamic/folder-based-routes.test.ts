@@ -1,6 +1,7 @@
 import chai from 'chai'
 import { fork, ChildProcess } from 'node:child_process'
 import fetch from 'node-fetch'
+import WebSocket from 'ws'
 
 const should = chai.should()
 let child: ChildProcess
@@ -30,6 +31,42 @@ describe('test dynamic folder-based routes for commonjs', () => {
 
   after(() => {
     child.kill('SIGKILL')
+  })
+
+  it('should return the correct response for a native websocket', async () => {
+    const ws = new WebSocket('ws://localhost:4001')
+
+    const response = await new Promise<string>((resolve, reject) => {
+      ws.on('error', reject)
+
+      ws.on('message', (data: string) => {
+        resolve(data)
+      })
+
+      ws.on('open', () => {
+        ws.send('echo')
+      })
+    })
+    
+    should.equal(response.toString(), 'echo')
+  })
+
+  it('should return the correct response for a express websocket', async () => {
+    const ws = new WebSocket('ws://localhost:4000/websockets/express-ws')
+
+    const response = await new Promise<string>((resolve, reject) => {
+      ws.on('error', reject)
+
+      ws.on('message', (data: string) => {
+        resolve(data)
+      })
+
+      ws.on('open', () => {
+        ws.send('echo')
+      })
+    })
+    
+    should.equal(response.toString(), 'echo')
   })
 
   it('should return the correct path for the / endpoint', async () => {
